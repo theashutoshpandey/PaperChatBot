@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* Chatbot container styles */
+        .chat-container {
+            border: 1px solid #ccc;
+            width: 80%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Chat messages styles */
+        .chat-messages {
+            list-style-type: none;
+            padding: 0;
+            max-height: 500px;
+            /* Set a fixed height for the chat window */
+            overflow: auto;
+        }
+
+        .chat-messages li {
+            padding: 8px 20px;
+        }
+
+        /* Scrollbar track (the background) */
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+            /* Set the width of the scrollbar */
+        }
+
+        /* Scrollbar handle (the draggable part) */
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            /* Set the color of the scrollbar handle */
+            border-radius: 4px;
+            /* Add rounded corners to the handle */
+        }
+
+        /* Scrollbar handle on hover */
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #888;
+            /* Change the handle color on hover */
+        }
+
+        .user-message {
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            text-align: right;
+            margin-bottom: 12px;
+            margin-right: 20px;
+            margin-left: 20px;
+        }
+
+        .bot-message {
+            background-color: #1494c6;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        /* Input field styles */
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+        }
+
+        /* Speech recognition button styles */
+        #speech-recognition-button {
+            background-color: #031318;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* Language selection dropdown styles */
+        #language-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Language option styles */
+        #language-select option {
+            background-color: #f1f1f1;
+            padding: 8px 16px;
+        }
+
+        /* Copyright notice styles */
+        .copyright {
+            text-align: center;
+            padding: 10px 0;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <ul class="chat-messages" id="chat-messages">
+            <li class="bot-message">Welcome! How can I assist you today?</li>
+        </ul>
+        <input type="text" id="user-input" class="chat-input" placeholder="Type a message and press enter ...">
+        <button id="speech-recognition-button">Start Listening</button>
+        <select id="language-select">
+            <option value="en-US">English (US)</option>
+            <option value="en-IN">English (IN)</option>
+            <option value="hi-IN">Hindi</option>
+        </select>
+        <div class="copyright">© 2023 Ashutosh Pandey. All rights reserved.</div>
+    </div>
+
+    <script>
+        // JavaScript for chatbot and speech recognition
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const speechRecognitionButton = document.getElementById('speech-recognition-button');
+        const languageSelect = document.getElementById('language-select');
+
+        // Initialize the speech recognition object
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        languageSelect.addEventListener('change', function () {
+            recognition.lang = languageSelect.value;
+        });
+
+        recognition.onresult = function (event) {
+            const transcript = event.results[0][0].transcript;
+            userInput.value = transcript;
+            sendMessage(transcript, 'user-message');
+
+            if (transcript.toLowerCase() === 'hi') {
+                sendMessage('Hello', 'bot-message');
+            }
+
+            recognition.stop();
+        }
+
+        recognition.onerror = function (event) {
+            console.error('Speech recognition error: ' + event.error);
+            recognition.stop();
+        }
+
+        recognition.onend = function () {
+            speechRecognitionButton.textContent = 'Start Listening';
+        }
+
+        speechRecognitionButton.addEventListener('click', function () {
+            if (recognition.continuous) {
+                recognition.stop();
+                speechRecognitionButton.textContent = ' Start Listening';
+            } else {
+                recognition.start();
+                speechRecognitionButton.textContent = ' Listening...';
+            }
+        });
+
+        userInput.addEventListener('keyup', function (event) {
+            if (event.key === 'Enter') {
+                const message = userInput.value;
+                sendMessage(message, 'user-message');
+
+                if (message.toLowerCase() === 'hi') {
+                    sendMessage('Hello', 'bot-message');
+                }
+                userInput.value = '';
+                // You can send the user's message to a backend for processing here.
+            }
+        });
+
+        function sendMessage(message, className) {
+            const li = document.createElement('li');
+            li.className = className;
+            li.textContent = message;
+            chatMessages.appendChild(li);
+
+            // Scroll to the end of the chat window
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
